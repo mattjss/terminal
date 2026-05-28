@@ -43,22 +43,23 @@
   #output {
     font-size: 10px;
     line-height: 2.0;
-    color: #b0b0b0;
+    color: #b8b8b8;
+    text-align: center;
   }
 
   .line { display: block; }
 
-  .p  { color: #525252; }
-  .v  { color: #4ab8c4; }
-  .m  { color: #6e6e6e; }
-  .d  { color: #3c3c3c; }
-  .g  { color: #52c460; }
-  .mk { color: #383838; }
+  .p  { color: #484848; }
+  .v  { color: #c8982a; }
+  .m  { color: #686868; }
+  .d  { color: #383838; }
+  .g  { color: #5ec45e; }
+  .mk { color: #343434; }
 
   .cursor {
     display: inline-block;
     width: 5px; height: 12px;
-    background: #909090;
+    background: #c8982a;
     vertical-align: text-bottom;
     margin-left: 2px;
     animation: blink 1.0s step-end infinite;
@@ -100,55 +101,55 @@
     return actx;
   };
 
-  // Short dot-matrix printer tick — the classic terminal "character print" sound
+  // Keystroke: near-silent, clean sine tap — ghost typing feel
   function keyClick() {
     try {
-      const c = ac();
-      const n = Math.floor(c.sampleRate * 0.004);
-      const buf = c.createBuffer(1, n, c.sampleRate);
-      const d = buf.getChannelData(0);
-      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
-      const src = c.createBufferSource(); src.buffer = buf;
-      const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3800; bp.Q.value = 0.6;
-      const g  = c.createGain(); g.gain.value = 0.28 + Math.random() * 0.1;
-      src.connect(bp); bp.connect(g); g.connect(c.destination);
-      src.start();
+      const c = ac(), osc = c.createOscillator(), g = c.createGain();
+      osc.type = 'sine'; osc.frequency.value = 1600 + Math.random() * 400;
+      osc.connect(g); g.connect(c.destination);
+      g.gain.setValueAtTime(0.032, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.014);
+      osc.start(); osc.stop(c.currentTime + 0.016);
     } catch (_) {}
   }
 
-  // Faint line-feed beep — like old terminal line advance
+  // Line reveal: soft data-received ping
   function blip() {
     try {
       const c = ac(), osc = c.createOscillator(), g = c.createGain();
+      osc.type = 'sine'; osc.frequency.value = 1100;
       osc.connect(g); g.connect(c.destination);
-      osc.type = 'square'; osc.frequency.value = 420;
-      g.gain.setValueAtTime(0.018, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.022);
-      osc.start(); osc.stop(c.currentTime + 0.025);
+      g.gain.setValueAtTime(0.024, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.038);
+      osc.start(); osc.stop(c.currentTime + 0.04);
     } catch (_) {}
   }
 
-  // Soft periodic scan pulse during processing
+  // Processing: descending sonar sweep — agent thinking
   function processPulse() {
     try {
       const c = ac(), osc = c.createOscillator(), g = c.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(1300, c.currentTime);
+      osc.frequency.exponentialRampToValueAtTime(500, c.currentTime + 0.14);
       osc.connect(g); g.connect(c.destination);
-      osc.type = 'sine'; osc.frequency.value = 1050;
-      g.gain.setValueAtTime(0.016, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.04);
-      osc.start(); osc.stop(c.currentTime + 0.045);
+      g.gain.setValueAtTime(0, c.currentTime);
+      g.gain.linearRampToValueAtTime(0.018, c.currentTime + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.16);
+      osc.start(); osc.stop(c.currentTime + 0.18);
     } catch (_) {}
   }
 
-  // Terminal BEL (^G) — two-tone confirm, like a teletype acknowledgement
+  // Success: ascending three-tone AI confirm — clean, modern, decisive
   function successChime() {
     try {
       const c = ac();
-      [[880, 0,    0.10, 0.18],
-       [1108, 0.1, 0.08, 0.22]].forEach(([hz, delay, vol, decay]) => {
+      [[660, 0,    0.055, 0.28],
+       [880, 0.09, 0.048, 0.32],
+       [1320,0.18, 0.038, 0.38]].forEach(([hz, delay, vol, decay]) => {
         const osc = c.createOscillator(), g = c.createGain();
-        osc.connect(g); g.connect(c.destination);
         osc.type = 'sine'; osc.frequency.value = hz;
+        osc.connect(g); g.connect(c.destination);
         const t = c.currentTime + delay;
         g.gain.setValueAtTime(0, t);
         g.gain.linearRampToValueAtTime(vol, t + 0.008);
