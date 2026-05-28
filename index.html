@@ -206,6 +206,11 @@
 
   const wait = ms => new Promise(r => setTimeout(r, ms));
 
+  // Cancellable wait — rejects within ms if gen changed
+  function waitG(ms, gen) {
+    return new Promise((res, rej) => setTimeout(() => runGen === gen ? res() : rej(0), ms));
+  }
+
   function addLine(html = '') {
     const el = document.createElement('span');
     el.className = 'line'; el.innerHTML = html;
@@ -223,41 +228,55 @@
     return { cmd, cur };
   }
 
-  async function type(cmdEl, text) {
+  async function type(cmdEl, text, gen) {
     for (const ch of text) {
+      if (runGen !== gen) throw 0;
       cmdEl.textContent += ch;
-      keyClick(0.18 + Math.random() * 0.08);
+      keyClick();
       await wait(46 + Math.random() * 62);
     }
   }
 
   const SPIN = ['⣾','⣽','⣻','⢿','⡿','⣟','⣯','⣷'];
 
-  function startSpin(label) {
+  // Cancellable thinking — interval checks gen every 100ms, rejects fast
+  function thinkFor(messages, ms, gen) {
+    const line = addLine('');
+    const span = document.createElement('span'); line.appendChild(span);
+    let si = 0, mi = 0, frames = 0, fpm = 12;
+    span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
+    return new Promise((res, rej) => {
+      const iv = setInterval(() => {
+        if (runGen !== gen) { clearInterval(iv); line.remove(); rej(0); return; }
+        si = (si + 1) % SPIN.length;
+        if (++frames % fpm === 0) mi = (mi + 1) % messages.length;
+        span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
+      }, 100);
+      setTimeout(() => {
+        clearInterval(iv);
+        line.remove();
+        runGen === gen ? res() : rej(0);
+      }, ms);
+    });
+  }
+
+  // Cancellable spinner — resolves with line element, rejects fast on cancel
+  function spinFor(label, ms, gen) {
     const line = addLine('');
     const span = document.createElement('span'); line.appendChild(span);
     let si = 0;
     span.innerHTML = `<span class="v">${SPIN[si]}</span> ${label}`;
-    const id = setInterval(() => {
-      si = (si + 1) % SPIN.length;
-      span.innerHTML = `<span class="v">${SPIN[si]}</span> ${label}`;
-    }, 100);
-    return { line, stop: () => clearInterval(id) };
-  }
-
-  function startThinking(messages, msPerMsg = 1200) {
-    const line = addLine('');
-    const span = document.createElement('span'); line.appendChild(span);
-    let si = 0, mi = 0, frames = 0;
-    const framesPerMsg = Math.round(msPerMsg / 100);
-    span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
-    const id = setInterval(() => {
-      si = (si + 1) % SPIN.length;
-      frames++;
-      if (frames % framesPerMsg === 0) mi = (mi + 1) % messages.length;
-      span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
-    }, 100);
-    return { line, stop: () => clearInterval(id) };
+    return new Promise((res, rej) => {
+      const iv = setInterval(() => {
+        if (runGen !== gen) { clearInterval(iv); rej(0); return; }
+        si = (si + 1) % SPIN.length;
+        span.innerHTML = `<span class="v">${SPIN[si]}</span> ${label}`;
+      }, 100);
+      setTimeout(() => {
+        clearInterval(iv);
+        runGen === gen ? res(line) : rej(0);
+      }, ms);
+    });
   }
 
   let mode = 'reserve';
@@ -265,93 +284,82 @@
 
   async function sceneDinner(gen) {
     const { cmd, cur } = mkPrompt('matt');
-    await wait(700);
-    await type(cmd, 'reserve dinner tonight');
-    enterClick(); await wait(140); cur.remove();
+    await waitG(700, gen);
+    await type(cmd, 'reserve dinner tonight', gen);
+    enterClick(); await waitG(140, gen); cur.remove();
 
-    const t1 = startThinking([
+    await thinkFor([
       'red meat: 0 of 1 this week',
       'you hit the gym today',
       'protein\'s the priority',
-    ]);
-    await wait(3800); t1.stop(); t1.line.remove();
-    if (gen !== runGen) throw 0;
+    ], 3800, gen);
 
     addLine('<span class="v">House of Prime Rib</span>  <span class="d">0.8mi · Van Ness</span>');
-    blip(); await wait(250);
+    blip(); await waitG(250, gen);
     addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">no red meat this week</span>  <span class="d">(0 / 1 allowed)</span>');
-    blip(); await wait(190);
+    blip(); await waitG(190, gen);
     addLine('<span class="mk">—</span> <span class="m">table</span>    <span class="v">window · 8:00pm · 2 seats</span>');
-    blip(); await wait(190);
+    blip(); await waitG(190, gen);
     addLine('<span class="mk">—</span> <span class="m">budget</span>   <span class="v">~$110pp</span>  <span class="d">within your range</span>');
-    blip(); await wait(340);
+    blip(); await waitG(340, gen);
 
-    const s1 = startSpin('reserving');
-    await wait(2200); s1.stop();
-    s1.line.innerHTML = '<span class="g">confirmed</span>  8:00pm · table for 2  <span class="d">2.1s</span>';
-    successChime(); await wait(200);
+    const l1 = await spinFor('reserving', 2200, gen);
+    l1.innerHTML = '<span class="g">confirmed</span>  8:00pm · table for 2  <span class="d">2.1s</span>';
+    successChime(); await waitG(200, gen);
     addLine('view reservation  <span class="d">#R-4829 · Prime Rib</span>');
-    blip(); await wait(500);
-    if (gen !== runGen) throw 0;
+    blip(); await waitG(500, gen);
 
-    const t2 = startThinking([
+    await thinkFor([
       'traffic\'s clear on Van Ness',
       'timing it around your 8pm',
-    ]);
-    await wait(2200); t2.stop(); t2.line.remove();
+    ], 2200, gen);
 
-    const s2 = startSpin('scheduling ride');
-    await wait(1000); s2.stop();
-    s2.line.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.4s</span>';
-    successChime(); await wait(200);
+    const l2 = await spinFor('scheduling ride', 1000, gen);
+    l2.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.4s</span>';
+    successChime(); await waitG(200, gen);
     addLine('<span class="v">Cybercab</span>  <span class="d">departs 7:40pm · arrives 8:02pm</span>');
-    blip(); await wait(190);
+    blip(); await waitG(190, gen);
     addLine('view ride  <span class="d">#C-2291 · Tesla</span>');
     blip();
   }
 
   async function sceneFun(gen) {
     const { cmd, cur } = mkPrompt('matt');
-    await wait(700);
-    await type(cmd, 'play golf');
-    enterClick(); await wait(140); cur.remove();
+    await waitG(700, gen);
+    await type(cmd, 'play golf', gen);
+    enterClick(); await waitG(140, gen); cur.remove();
 
-    const t1 = startThinking([
+    await thinkFor([
       'checking your week',
       'tallying your stats',
-    ]);
-    await wait(2600); t1.stop(); t1.line.remove();
-    if (gen !== runGen) throw 0;
+    ], 2600, gen);
 
     addLine('<span class="mk">—</span> <span class="m">run</span>     <span class="v">52mi</span>  <span class="d">goal 40mi</span>  <span class="g">✓</span>');
-    blip(); await wait(220);
+    blip(); await waitG(220, gen);
     addLine('<span class="mk">—</span> <span class="m">code</span>    <span class="v">4,820 lines</span>  <span class="g">✓</span>');
-    blip(); await wait(220);
+    blip(); await waitG(220, gen);
     addLine('<span class="mk">—</span> <span class="m">meals</span>   <span class="v">clean</span>  <span class="d">6 of 7 days</span>  <span class="g">✓</span>');
-    blip(); await wait(360);
+    blip(); await waitG(360, gen);
 
     addLine('<span class="mk">top tier unlocked</span>  <span class="d">2 courses available</span>');
-    blip(); await wait(380);
+    blip(); await waitG(380, gen);
 
     addLine('<span class="m">The Olympic Club</span>    <span class="d">7mi</span>');
-    blip(); await wait(200);
+    blip(); await waitG(200, gen);
     addLine('<span class="v">Pebble Beach</span>        <span class="d">32mi</span>  <span class="mk">← best match</span>');
-    blip(); await wait(440);
+    blip(); await waitG(440, gen);
 
-    const s1 = startSpin('booking');
-    await wait(2400); s1.stop();
-    if (gen !== runGen) throw 0;
-    s1.line.innerHTML = '<span class="g">confirmed</span>  Pebble Beach · Sat 8:30am  <span class="d">1.8s</span>';
-    successChime(); await wait(200);
+    const l1 = await spinFor('booking', 2400, gen);
+    l1.innerHTML = '<span class="g">confirmed</span>  Pebble Beach · Sat 8:30am  <span class="d">1.8s</span>';
+    successChime(); await waitG(200, gen);
     addLine('view booking  <span class="d">#G-2291 · Pebble Beach</span>');
-    blip(); await wait(500);
+    blip(); await waitG(500, gen);
 
-    const s2 = startSpin('scheduling ride');
-    await wait(1800); s2.stop();
-    s2.line.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.2s</span>';
-    successChime(); await wait(200);
+    const l2 = await spinFor('scheduling ride', 1800, gen);
+    l2.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.2s</span>';
+    successChime(); await waitG(200, gen);
     addLine('<span class="v">Cybercab</span>  <span class="d">departs 7:45am · arrives 8:15am</span>');
-    blip(); await wait(190);
+    blip(); await waitG(190, gen);
     addLine('view ride  <span class="d">#C-8847 · Tesla</span>');
     blip();
   }
@@ -359,25 +367,22 @@
   async function run() {
     const gen = ++runGen;
     out.innerHTML = '';
-    await wait(460);
-    if (gen !== runGen) return;
     try {
+      await waitG(700, gen);
       if (mode === 'fun') await sceneFun(gen);
       else await sceneDinner(gen);
-    } catch(_) { return; }
-    if (gen !== runGen) return;
-    await wait(500);
-    mkPrompt('matt');
-    await wait(2800);
-    if (gen !== runGen) return;
-    run();
+      await waitG(500, gen);
+      mkPrompt('matt');
+      await waitG(2800, gen);
+      run();
+    } catch(_) {}
   }
 
   document.getElementById('mode-switch').addEventListener('change', e => {
     mode = e.target.checked ? 'fun' : 'reserve';
     runGen++;
     out.innerHTML = '';
-    run();
+    setTimeout(() => run(), 500);
   });
 
   document.addEventListener('click', () => ac(), { once: true });
