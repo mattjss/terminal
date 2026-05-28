@@ -226,6 +226,30 @@
     blip();
 
     await wait(500);
+
+    const rideLine = addLine('');
+    const rideSpan = document.createElement('span'); rideLine.appendChild(rideSpan);
+    rideSpan.innerHTML = `<span class="v">${SPIN[si]}</span> scheduling ride`;
+
+    const rideSpinner = setInterval(() => {
+      si = (si + 1) % SPIN.length;
+      rideSpan.innerHTML = `<span class="v">${SPIN[si]}</span> scheduling ride`;
+    }, 100);
+
+    await wait(2200);
+    clearInterval(rideSpinner);
+
+    rideLine.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.4s</span>';
+    successChime();
+
+    await wait(200);
+    addLine('<span class="v">Cybercab</span>  <span class="d">departs 7:40pm · arrives 8:02pm</span>');
+    blip();
+    await wait(190);
+    addLine('view ride  <span class="d">#C-2291 · Tesla</span>');
+    blip();
+
+    await wait(500);
     mkPrompt('matt');
 
     await wait(2800);
