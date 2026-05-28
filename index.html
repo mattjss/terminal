@@ -80,7 +80,7 @@
 
   #toggle-bar {
     padding: 0 32px 18px;
-    display: flex; align-items: center;
+    display: flex; align-items: center; justify-content: center;
   }
   .toggle {
     position: relative; display: inline-block;
@@ -95,11 +95,11 @@
   .knob::before {
     content: ''; position: absolute;
     width: 10px; height: 10px; left: 2px; top: 2px;
-    background: rgba(255,255,255,0.25); border-radius: 50%;
+    background: rgba(255,255,255,0.22); border-radius: 50%;
     transition: transform 0.18s, background 0.18s;
   }
-  .toggle input:checked + .knob { background: rgba(249,115,22,0.2); }
-  .toggle input:checked + .knob::before { transform: translateX(12px); background: #f97316; }
+  .toggle input:checked + .knob { background: rgba(255,255,255,0.18); }
+  .toggle input:checked + .knob::before { transform: translateX(12px); background: rgba(255,255,255,0.7); }
 </style>
 </head>
 <body>
