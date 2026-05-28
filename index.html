@@ -44,8 +44,7 @@
     font-size: 10px;
     line-height: 2.0;
     color: #c0c0c0;
-    width: fit-content;
-    min-width: 240px;
+    width: 300px;
     margin: 0 auto;
   }
 
@@ -243,9 +242,9 @@
     enterClick(); await wait(140); cur.remove();
 
     const t1 = startThinking([
-      'you skipped lunch — something substantial makes sense',
-      'you\'ve been eating clean all week, red meat\'s the gap',
-      'pulling up spots that know your preferences',
+      'you skipped lunch today',
+      'red meat\'s the gap this week',
+      'checking your usual spots',
     ]);
     await wait(3800); t1.stop();
     t1.line.remove();
@@ -267,8 +266,8 @@
     blip(); await wait(500);
 
     const t2 = startThinking([
-      'timing the drive — about 18 minutes out',
-      'leaving at 7:40 puts you there a few minutes early',
+      '18 minutes out',
+      'leaving at 7:40 works',
     ]);
     await wait(2200); t2.stop();
     t2.line.remove();
