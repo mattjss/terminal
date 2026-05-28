@@ -183,46 +183,46 @@
     const { cmd, cur } = mkPrompt('matt');
     await wait(700);
 
-    await type(cmd, 'swap 12h sleep btc');
+    await type(cmd, 'reserve dinner tonight');
     keyClick(0.28);
     await wait(140);
     cur.remove();
 
-    addLine('Swap 12h SLEEP for ~0.02856 BTC');
+    addLine('<span class="v">Keens Steakhouse</span>  <span class="d">0.4mi · Midtown</span>');
     blip();
     await wait(250);
 
-    addLine('<span class="mk">—</span> <span class="m">rate</span>    <span class="v">1h SLEEP  =  0.00238 BTC</span>  <span class="d">via terminal</span>');
+    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">no red meat this week</span>  <span class="d">(0 / 1 allowed)</span>');
     blip();
     await wait(190);
 
-    addLine('<span class="mk">—</span> <span class="m">fee</span>     <span class="v">$0.69</span>  <span class="d">0.00242h SLEEP</span>');
+    addLine('<span class="mk">—</span> <span class="m">table</span>    <span class="v">window · 8:00pm · 2 seats</span>');
     blip();
     await wait(190);
 
-    addLine('<span class="mk">—</span> <span class="m">slippage</span>  0.5%  <span class="d">default</span>');
+    addLine('<span class="mk">—</span> <span class="m">budget</span>   <span class="v">~$110pp</span>  <span class="d">within your range</span>');
     blip();
     await wait(340);
 
-    const swapLine = addLine('');
-    const swapSpan = document.createElement('span'); swapLine.appendChild(swapSpan);
+    const resLine = addLine('');
+    const resSpan = document.createElement('span'); resLine.appendChild(resSpan);
     let si = 0;
-    swapSpan.innerHTML = `<span class="v">${SPIN[si]}</span> processing`;
+    resSpan.innerHTML = `<span class="v">${SPIN[si]}</span> reserving`;
 
     const spinner = setInterval(() => {
       si = (si + 1) % SPIN.length;
-      swapSpan.innerHTML = `<span class="v">${SPIN[si]}</span> processing`;
+      resSpan.innerHTML = `<span class="v">${SPIN[si]}</span> reserving`;
       processPulse();
     }, 100);
 
     await wait(3000);
     clearInterval(spinner);
 
-    swapLine.innerHTML = '<span class="g">done</span>  received .0238 BTC  <span class="d">420ms</span>';
+    resLine.innerHTML = '<span class="g">confirmed</span>  8:00pm · table for 2  <span class="d">2.1s</span>';
     successChime();
 
     await wait(200);
-    addLine('view on explorer  <span class="d">tx b6f6…dacc</span>');
+    addLine('view reservation  <span class="d">#R-4829 · Keens</span>');
     blip();
 
     await wait(500);
