@@ -88,7 +88,7 @@
     </div>
 
   </div>
-  <div id="meta">terminal — click to enable audio</div>
+  <div id="meta">terminal</div>
 </div>
 
 <script>
@@ -231,10 +231,7 @@
     run();
   }
 
-  document.addEventListener('click', () => {
-    ac();
-    meta.textContent = 'terminal — tap anywhere to restart';
-  }, { once: true });
+  document.addEventListener('click', () => ac(), { once: true });
 
   run();
 })();
