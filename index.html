@@ -25,7 +25,7 @@
 
   #terminal {
     width: var(--sz); height: var(--sz);
-    background: #0d0d0d;
+    background: #080808;
     border-radius: 10px;
     border: 1px solid rgba(255,255,255,0.06);
     display: flex; flex-direction: column;
@@ -43,22 +43,23 @@
   #output {
     font-size: 10px;
     line-height: 2.0;
-    color: #b8b8b8;
+    color: #c0c0c0;
+    width: fit-content;
   }
 
   .line { display: block; }
 
   .p  { color: #484848; }
-  .v  { color: #c8982a; }
+  .v  { color: #f5c842; }
   .m  { color: #686868; }
-  .d  { color: #383838; }
-  .g  { color: #5ec45e; }
-  .mk { color: #343434; }
+  .d  { color: #484848; }
+  .g  { color: #4ade80; }
+  .mk { color: #f5c842; }
 
   .cursor {
     display: inline-block;
     width: 5px; height: 12px;
-    background: #c8982a;
+    background: #f5c842;
     vertical-align: text-bottom;
     margin-left: 2px;
     animation: blink 1.0s step-end infinite;
@@ -204,11 +205,11 @@
     const swapLine = addLine('');
     const swapSpan = document.createElement('span'); swapLine.appendChild(swapSpan);
     let si = 0;
-    swapSpan.innerHTML = `<span class="d">${SPIN[si]}</span> processing`;
+    swapSpan.innerHTML = `<span class="v">${SPIN[si]}</span> processing`;
 
     const spinner = setInterval(() => {
       si = (si + 1) % SPIN.length;
-      swapSpan.innerHTML = `<span class="d">${SPIN[si]}</span> processing`;
+      swapSpan.innerHTML = `<span class="v">${SPIN[si]}</span> processing`;
       processPulse();
     }, 100);
 
