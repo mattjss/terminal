@@ -103,46 +103,70 @@
     return actx;
   };
 
-  // Keystroke: short square blip
+  function mkNoise(c, dur) {
+    const n = Math.ceil(c.sampleRate * dur);
+    const buf = c.createBuffer(1, n, c.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < n; i++) d[i] = Math.random() * 2 - 1;
+    const src = c.createBufferSource(); src.buffer = buf; return src;
+  }
+
+  // Keystroke: filtered noise click + low body thock
   function keyClick() {
     try {
-      const c = ac(), osc = c.createOscillator(), g = c.createGain();
-      osc.type = 'square'; osc.frequency.value = 600 + Math.random() * 200;
-      osc.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(0.06, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.018);
-      osc.start(); osc.stop(c.currentTime + 0.02);
+      const c = ac(), t = c.currentTime;
+      const noise = mkNoise(c, 0.012);
+      const filt = c.createBiquadFilter();
+      filt.type = 'bandpass'; filt.frequency.value = 3200 + Math.random() * 800; filt.Q.value = 0.9;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(0.18, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.016);
+      noise.connect(filt); filt.connect(ng); ng.connect(c.destination);
+      noise.start(); noise.stop(t + 0.018);
+      const osc = c.createOscillator(), og = c.createGain();
+      osc.type = 'square'; osc.frequency.value = 160 + Math.random() * 50;
+      osc.connect(og); og.connect(c.destination);
+      og.gain.setValueAtTime(0.04, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.022);
+      osc.start(); osc.stop(t + 0.025);
     } catch (_) {}
   }
 
-  // Enter key: heavier thunk
+  // Enter key: deeper noise + heavier body
   function enterClick() {
     try {
-      const c = ac(), osc = c.createOscillator(), g = c.createGain();
-      osc.type = 'square'; osc.frequency.value = 280;
-      osc.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(0.10, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.048);
-      osc.start(); osc.stop(c.currentTime + 0.052);
+      const c = ac(), t = c.currentTime;
+      const noise = mkNoise(c, 0.018);
+      const filt = c.createBiquadFilter();
+      filt.type = 'bandpass'; filt.frequency.value = 2000; filt.Q.value = 0.7;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(0.24, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.026);
+      noise.connect(filt); filt.connect(ng); ng.connect(c.destination);
+      noise.start(); noise.stop(t + 0.03);
+      const osc = c.createOscillator(), og = c.createGain();
+      osc.type = 'square'; osc.frequency.value = 100;
+      osc.connect(og); og.connect(c.destination);
+      og.gain.setValueAtTime(0.07, t); og.gain.exponentialRampToValueAtTime(0.0001, t + 0.042);
+      osc.start(); osc.stop(t + 0.046);
     } catch (_) {}
   }
 
-  // Line reveal: quiet tick
+  // Line reveal: quiet high noise tick
   function blip() {
     try {
-      const c = ac(), osc = c.createOscillator(), g = c.createGain();
-      osc.type = 'square'; osc.frequency.value = 440;
-      osc.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(0.04, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.02);
-      osc.start(); osc.stop(c.currentTime + 0.022);
+      const c = ac(), t = c.currentTime;
+      const noise = mkNoise(c, 0.008);
+      const filt = c.createBiquadFilter();
+      filt.type = 'bandpass'; filt.frequency.value = 4000; filt.Q.value = 1.2;
+      const ng = c.createGain();
+      ng.gain.setValueAtTime(0.07, t); ng.gain.exponentialRampToValueAtTime(0.0001, t + 0.012);
+      noise.connect(filt); filt.connect(ng); ng.connect(c.destination);
+      noise.start(); noise.stop(t + 0.014);
     } catch (_) {}
   }
 
   // Processing: silent
   function processPulse() {}
 
-  // Success: classic terminal BEL — two clean tones
+  // Success: two clean tones
   function successChime() {
     try {
       const c = ac();
