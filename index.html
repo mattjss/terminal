@@ -100,60 +100,45 @@
     return actx;
   };
 
-  // Keystroke: near-silent, clean sine tap — ghost typing feel
+  // Keystroke: short square blip
   function keyClick() {
     try {
       const c = ac(), osc = c.createOscillator(), g = c.createGain();
-      osc.type = 'sine'; osc.frequency.value = 1600 + Math.random() * 400;
+      osc.type = 'square'; osc.frequency.value = 600 + Math.random() * 200;
       osc.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(0.032, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.014);
-      osc.start(); osc.stop(c.currentTime + 0.016);
+      g.gain.setValueAtTime(0.06, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.018);
+      osc.start(); osc.stop(c.currentTime + 0.02);
     } catch (_) {}
   }
 
-  // Line reveal: soft data-received ping
+  // Line reveal: quiet tick
   function blip() {
     try {
       const c = ac(), osc = c.createOscillator(), g = c.createGain();
-      osc.type = 'sine'; osc.frequency.value = 1100;
+      osc.type = 'square'; osc.frequency.value = 440;
       osc.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(0.024, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.038);
-      osc.start(); osc.stop(c.currentTime + 0.04);
+      g.gain.setValueAtTime(0.04, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.02);
+      osc.start(); osc.stop(c.currentTime + 0.022);
     } catch (_) {}
   }
 
-  // Processing: descending sonar sweep — agent thinking
-  function processPulse() {
-    try {
-      const c = ac(), osc = c.createOscillator(), g = c.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(1300, c.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(500, c.currentTime + 0.14);
-      osc.connect(g); g.connect(c.destination);
-      g.gain.setValueAtTime(0, c.currentTime);
-      g.gain.linearRampToValueAtTime(0.018, c.currentTime + 0.01);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.16);
-      osc.start(); osc.stop(c.currentTime + 0.18);
-    } catch (_) {}
-  }
+  // Processing: silent
+  function processPulse() {}
 
-  // Success: ascending three-tone AI confirm — clean, modern, decisive
+  // Success: classic terminal BEL — two clean tones
   function successChime() {
     try {
       const c = ac();
-      [[660, 0,    0.055, 0.28],
-       [880, 0.09, 0.048, 0.32],
-       [1320,0.18, 0.038, 0.38]].forEach(([hz, delay, vol, decay]) => {
+      [[880, 0, 0.12, 0.15], [1108, 0.18, 0.10, 0.18]].forEach(([hz, delay, vol, decay]) => {
         const osc = c.createOscillator(), g = c.createGain();
         osc.type = 'sine'; osc.frequency.value = hz;
         osc.connect(g); g.connect(c.destination);
         const t = c.currentTime + delay;
-        g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(vol, t + 0.008);
+        g.gain.setValueAtTime(vol, t);
         g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
-        osc.start(t); osc.stop(t + decay + 0.02);
+        osc.start(t); osc.stop(t + decay + 0.01);
       });
     } catch (_) {}
   }
