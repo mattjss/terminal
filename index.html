@@ -77,6 +77,29 @@
     color: rgba(255,255,255,0.18);
     font-family: 'Geist Mono', 'Menlo', monospace;
   }
+
+  #toggle-bar {
+    padding: 0 32px 18px;
+    display: flex; align-items: center;
+  }
+  .toggle {
+    position: relative; display: inline-block;
+    width: 26px; height: 14px; cursor: pointer;
+  }
+  .toggle input { opacity: 0; width: 0; height: 0; position: absolute; }
+  .knob {
+    position: absolute; inset: 0;
+    background: rgba(255,255,255,0.08);
+    border-radius: 7px; transition: background 0.2s;
+  }
+  .knob::before {
+    content: ''; position: absolute;
+    width: 10px; height: 10px; left: 2px; top: 2px;
+    background: rgba(255,255,255,0.25); border-radius: 50%;
+    transition: transform 0.18s, background 0.18s;
+  }
+  .toggle input:checked + .knob { background: rgba(249,115,22,0.2); }
+  .toggle input:checked + .knob::before { transform: translateX(12px); background: #f97316; }
 </style>
 </head>
 <body>
@@ -86,7 +109,9 @@
     <div id="body">
       <div id="output"></div>
     </div>
-
+    <div id="toggle-bar">
+      <label class="toggle"><input type="checkbox" id="mode-switch"><span class="knob"></span></label>
+    </div>
   </div>
   <div id="meta">terminal</div>
 </div>
@@ -235,7 +260,10 @@
     return { line, stop: () => clearInterval(id) };
   }
 
-  async function sceneDinner() {
+  let mode = 'reserve';
+  let runGen = 0;
+
+  async function sceneDinner(gen) {
     const { cmd, cur } = mkPrompt('matt');
     await wait(700);
     await type(cmd, 'reserve dinner tonight');
@@ -246,8 +274,8 @@
       'you hit the gym today',
       'protein\'s the priority',
     ]);
-    await wait(3800); t1.stop();
-    t1.line.remove();
+    await wait(3800); t1.stop(); t1.line.remove();
+    if (gen !== runGen) throw 0;
 
     addLine('<span class="v">House of Prime Rib</span>  <span class="d">0.8mi · Van Ness</span>');
     blip(); await wait(250);
@@ -264,13 +292,13 @@
     successChime(); await wait(200);
     addLine('view reservation  <span class="d">#R-4829 · Prime Rib</span>');
     blip(); await wait(500);
+    if (gen !== runGen) throw 0;
 
     const t2 = startThinking([
       'traffic\'s clear on Van Ness',
       'timing it around your 8pm',
     ]);
-    await wait(2200); t2.stop();
-    t2.line.remove();
+    await wait(2200); t2.stop(); t2.line.remove();
 
     const s2 = startSpin('scheduling ride');
     await wait(1000); s2.stop();
@@ -282,15 +310,63 @@
     blip();
   }
 
+  async function sceneFun(gen) {
+    const { cmd, cur } = mkPrompt('matt');
+    await wait(700);
+    await type(cmd, 'redeem golf round');
+    enterClick(); await wait(140); cur.remove();
+    if (gen !== runGen) throw 0;
+
+    addLine('<span class="v">Pebble Beach</span>  <span class="d">Sat 8:30am · 18 holes</span>');
+    blip(); await wait(250);
+    addLine('<span class="mk">—</span> <span class="m">runs</span>     <span class="v">52mi logged this month</span>  <span class="d">goal: 40mi ✓</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">code</span>     <span class="v">4,820 lines this week</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">cost</span>     <span class="v">$0</span>  <span class="d">fully earned</span>');
+    blip(); await wait(340);
+
+    const s1 = startSpin('booking tee time');
+    await wait(2400); s1.stop();
+    if (gen !== runGen) throw 0;
+    s1.line.innerHTML = '<span class="g">confirmed</span>  Sat 8:30am · tee time held  <span class="d">1.8s</span>';
+    successChime(); await wait(200);
+    addLine('view booking  <span class="d">#G-2291 · Pebble Beach</span>');
+    blip(); await wait(500);
+
+    const s2 = startSpin('scheduling ride');
+    await wait(1800); s2.stop();
+    s2.line.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.2s</span>';
+    successChime(); await wait(200);
+    addLine('<span class="v">Cybercab</span>  <span class="d">departs 7:45am · arrives 8:15am</span>');
+    blip(); await wait(190);
+    addLine('view ride  <span class="d">#C-8847 · Tesla</span>');
+    blip();
+  }
+
   async function run() {
+    const gen = ++runGen;
     out.innerHTML = '';
     await wait(460);
-    await sceneDinner();
+    if (gen !== runGen) return;
+    try {
+      if (mode === 'fun') await sceneFun(gen);
+      else await sceneDinner(gen);
+    } catch(_) { return; }
+    if (gen !== runGen) return;
     await wait(500);
     mkPrompt('matt');
     await wait(2800);
+    if (gen !== runGen) return;
     run();
   }
+
+  document.getElementById('mode-switch').addEventListener('change', e => {
+    mode = e.target.checked ? 'fun' : 'reserve';
+    runGen++;
+    out.innerHTML = '';
+    run();
+  });
 
   document.addEventListener('click', () => ac(), { once: true });
 
