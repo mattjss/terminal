@@ -323,10 +323,15 @@
     await wait(2600); t1.stop(); t1.line.remove();
     if (gen !== runGen) throw 0;
 
-    addLine('<span class="v">52mi</span> <span class="d">run ·</span> <span class="v">5 sessions</span> <span class="d">·</span> <span class="v">ate clean</span>');
-    blip(); await wait(260);
+    addLine('<span class="mk">—</span> <span class="m">run</span>     <span class="v">52mi</span>  <span class="d">goal 40mi</span>  <span class="g">✓</span>');
+    blip(); await wait(220);
+    addLine('<span class="mk">—</span> <span class="m">code</span>    <span class="v">4,820 lines</span>  <span class="g">✓</span>');
+    blip(); await wait(220);
+    addLine('<span class="mk">—</span> <span class="m">meals</span>   <span class="v">clean</span>  <span class="d">6 of 7 days</span>  <span class="g">✓</span>');
+    blip(); await wait(360);
+
     addLine('<span class="mk">top tier unlocked</span>  <span class="d">2 courses available</span>');
-    blip(); await wait(400);
+    blip(); await wait(380);
 
     addLine('<span class="m">The Olympic Club</span>    <span class="d">7mi</span>');
     blip(); await wait(200);
