@@ -207,85 +207,117 @@
     }
   }
 
-  // Braille spinner — inverse pattern: rotating dark gap through a full block
   const SPIN = ['⣾','⣽','⣻','⢿','⡿','⣟','⣯','⣷'];
+
+  function startSpin(label) {
+    const line = addLine('');
+    const span = document.createElement('span'); line.appendChild(span);
+    let si = 0;
+    span.innerHTML = `<span class="v">${SPIN[si]}</span> ${label}`;
+    const id = setInterval(() => {
+      si = (si + 1) % SPIN.length;
+      span.innerHTML = `<span class="v">${SPIN[si]}</span> ${label}`;
+    }, 100);
+    return { line, stop: () => clearInterval(id) };
+  }
+
+  async function sceneDinner() {
+    const { cmd, cur } = mkPrompt('matt');
+    await wait(700);
+    await type(cmd, 'reserve dinner tonight');
+    enterClick(); await wait(140); cur.remove();
+
+    addLine('<span class="v">House of Prime Rib</span>  <span class="d">0.8mi · Van Ness</span>');
+    blip(); await wait(250);
+    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">no red meat this week</span>  <span class="d">(0 / 1 allowed)</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">table</span>    <span class="v">window · 8:00pm · 2 seats</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">budget</span>   <span class="v">~$110pp</span>  <span class="d">within your range</span>');
+    blip(); await wait(340);
+
+    const s1 = startSpin('reserving');
+    await wait(3000); s1.stop();
+    s1.line.innerHTML = '<span class="g">confirmed</span>  8:00pm · table for 2  <span class="d">2.1s</span>';
+    successChime(); await wait(200);
+    addLine('view reservation  <span class="d">#R-4829 · Prime Rib</span>');
+    blip(); await wait(500);
+
+    const s2 = startSpin('scheduling ride');
+    await wait(2200); s2.stop();
+    s2.line.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.4s</span>';
+    successChime(); await wait(200);
+    addLine('<span class="v">Cybercab</span>  <span class="d">departs 7:40pm · arrives 8:02pm</span>');
+    blip(); await wait(190);
+    addLine('view ride  <span class="d">#C-2291 · Tesla</span>');
+    blip();
+  }
+
+  async function sceneTickets() {
+    const { cmd, cur } = mkPrompt('matt');
+    await wait(700);
+    await type(cmd, 'find tickets giants game');
+    enterClick(); await wait(140); cur.remove();
+
+    addLine('<span class="v">Giants vs Dodgers</span>  <span class="d">Oracle Park · Fri 7:05pm</span>');
+    blip(); await wait(250);
+    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">rivals matchup</span>  <span class="d">your top preference</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">seats</span>    <span class="v">sec 114 · row 5 · aisle pair</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">price</span>    <span class="v">$84pp</span>  <span class="d">below avg for section</span>');
+    blip(); await wait(340);
+
+    const s1 = startSpin('securing tickets');
+    await wait(2800); s1.stop();
+    s1.line.innerHTML = '<span class="g">confirmed</span>  2 tickets · sec 114  <span class="d">1.8s</span>';
+    successChime(); await wait(200);
+    addLine('view tickets  <span class="d">#T-7723 · Giants</span>');
+    blip(); await wait(500);
+
+    const s2 = startSpin('scheduling ride');
+    await wait(2200); s2.stop();
+    s2.line.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">0.9s</span>';
+    successChime(); await wait(200);
+    addLine('<span class="v">Cybercab</span>  <span class="d">departs 6:20pm · arrives 6:48pm</span>');
+    blip(); await wait(190);
+    addLine('view ride  <span class="d">#C-4418 · Tesla</span>');
+    blip();
+  }
+
+  async function sceneRun() {
+    const { cmd, cur } = mkPrompt('matt');
+    await wait(700);
+    await type(cmd, 'plan morning run');
+    enterClick(); await wait(140); cur.remove();
+
+    addLine('<span class="v">Embarcadero Loop</span>  <span class="d">4.2mi · 52°F · clear</span>');
+    blip(); await wait(250);
+    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">missed yesterday</span>  <span class="d">streak at risk · 6am window open</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">pace</span>     <span class="v">8:20 / mi</span>  <span class="d">easy · HRV low this morning</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">alarm</span>    <span class="v">5:45am</span>  <span class="d">set · do not disturb on</span>');
+    blip(); await wait(340);
+
+    const s1 = startSpin('saving route');
+    await wait(2200); s1.stop();
+    s1.line.innerHTML = '<span class="g">ready</span>  6:00am · Embarcadero Loop  <span class="d">0.6s</span>';
+    successChime(); await wait(200);
+    addLine('view route  <span class="d">4.2mi · est 35min</span>');
+    blip();
+  }
+
+  const scenes = [sceneDinner, sceneTickets, sceneRun];
+  let sceneIdx = 0;
 
   async function run() {
     out.innerHTML = '';
-
     await wait(460);
-    const { cmd, cur } = mkPrompt('matt');
-    await wait(700);
-
-    await type(cmd, 'reserve dinner tonight');
-    enterClick();
-    await wait(140);
-    cur.remove();
-
-    addLine('<span class="v">House of Prime Rib</span>  <span class="d">0.8mi · Van Ness</span>');
-    blip();
-    await wait(250);
-
-    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">no red meat this week</span>  <span class="d">(0 / 1 allowed)</span>');
-    blip();
-    await wait(190);
-
-    addLine('<span class="mk">—</span> <span class="m">table</span>    <span class="v">window · 8:00pm · 2 seats</span>');
-    blip();
-    await wait(190);
-
-    addLine('<span class="mk">—</span> <span class="m">budget</span>   <span class="v">~$110pp</span>  <span class="d">within your range</span>');
-    blip();
-    await wait(340);
-
-    const resLine = addLine('');
-    const resSpan = document.createElement('span'); resLine.appendChild(resSpan);
-    let si = 0;
-    resSpan.innerHTML = `<span class="v">${SPIN[si]}</span> reserving`;
-
-    const spinner = setInterval(() => {
-      si = (si + 1) % SPIN.length;
-      resSpan.innerHTML = `<span class="v">${SPIN[si]}</span> reserving`;
-      processPulse();
-    }, 100);
-
-    await wait(3000);
-    clearInterval(spinner);
-
-    resLine.innerHTML = '<span class="g">confirmed</span>  8:00pm · table for 2  <span class="d">2.1s</span>';
-    successChime();
-
-    await wait(200);
-    addLine('view reservation  <span class="d">#R-4829 · Prime Rib</span>');
-    blip();
-
-    await wait(500);
-
-    const rideLine = addLine('');
-    const rideSpan = document.createElement('span'); rideLine.appendChild(rideSpan);
-    rideSpan.innerHTML = `<span class="v">${SPIN[si]}</span> scheduling ride`;
-
-    const rideSpinner = setInterval(() => {
-      si = (si + 1) % SPIN.length;
-      rideSpan.innerHTML = `<span class="v">${SPIN[si]}</span> scheduling ride`;
-    }, 100);
-
-    await wait(2200);
-    clearInterval(rideSpinner);
-
-    rideLine.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.4s</span>';
-    successChime();
-
-    await wait(200);
-    addLine('<span class="v">Cybercab</span>  <span class="d">departs 7:40pm · arrives 8:02pm</span>');
-    blip();
-    await wait(190);
-    addLine('view ride  <span class="d">#C-2291 · Tesla</span>');
-    blip();
-
+    await scenes[sceneIdx]();
+    sceneIdx = (sceneIdx + 1) % scenes.length;
     await wait(500);
     mkPrompt('matt');
-
     await wait(2800);
     run();
   }
