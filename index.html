@@ -4,13 +4,10 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>terminal</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,300;0,400;1,300&display=swap" rel="stylesheet">
 <style>
-  :root { --sz: 422px; --fs: 12px; --fs-sm: 11px; }
-  @media (min-width: 1440px) { :root { --sz: 576px; --fs: 13px; --fs-sm: 12px; } }
-  @media (max-width: 480px)  { :root { --sz: 322px; --fs: 11px; --fs-sm: 10px; } }
+  :root { --sz: 422px; }
+  @media (min-width: 1440px) { :root { --sz: 576px; } }
+  @media (max-width: 480px)  { :root { --sz: 322px; } }
 
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -19,7 +16,7 @@
     background: #000;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
-    font-family: 'JetBrains Mono', monospace;
+    font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
   }
 
   #wrap {
@@ -39,35 +36,28 @@
   #body {
     flex: 1;
     padding: 36px 32px 24px;
-    display: flex; flex-direction: column; justify-content: flex-end;
+    display: flex; flex-direction: column; justify-content: center;
     overflow: hidden;
   }
 
   #output {
-    font-size: var(--fs);
+    font-size: 10px;
     line-height: 2.0;
     color: #b0b0b0;
-    font-weight: 400;
   }
 
   .line { display: block; }
 
-  /* Prompt: › instead of % */
-  .p  { color: #525252; font-weight: 300; }
-  /* Values: teal instead of orange */
+  .p  { color: #525252; }
   .v  { color: #4ab8c4; }
-  /* Labels: muted */
-  .m  { color: #6e6e6e; font-weight: 300; }
-  /* Dim: very muted */
-  .d  { color: #3c3c3c; font-weight: 300; }
-  /* Success */
+  .m  { color: #6e6e6e; }
+  .d  { color: #3c3c3c; }
   .g  { color: #52c460; }
-  /* Output indent marker */
   .mk { color: #383838; }
 
   .cursor {
     display: inline-block;
-    width: 5.5px; height: calc(var(--fs) + 2px);
+    width: 5px; height: 12px;
     background: #909090;
     vertical-align: text-bottom;
     margin-left: 2px;
@@ -79,12 +69,11 @@
     50%, 100% { opacity: 0; }
   }
 
-
   #meta {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; font-weight: 300;
+    font-size: 10px;
     letter-spacing: 0.04em; text-transform: uppercase;
     color: rgba(255,255,255,0.18);
+    font-family: 'Geist Mono', 'Menlo', monospace;
   }
 </style>
 </head>
@@ -111,65 +100,60 @@
     return actx;
   };
 
-  // Crisp noise-based keyboard click
-  function keyClick(vol = 0.22) {
+  // Short dot-matrix printer tick — the classic terminal "character print" sound
+  function keyClick() {
     try {
       const c = ac();
-      const n = Math.floor(c.sampleRate * 0.007);
+      const n = Math.floor(c.sampleRate * 0.004);
       const buf = c.createBuffer(1, n, c.sampleRate);
       const d = buf.getChannelData(0);
-      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / n) * (1 - i / n);
+      for (let i = 0; i < n; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / n, 3);
       const src = c.createBufferSource(); src.buffer = buf;
-      const hp  = c.createBiquadFilter(); hp.type = 'highpass'; hp.frequency.value = 2200;
-      const g   = c.createGain(); g.gain.value = vol * (0.85 + Math.random() * 0.3);
-      src.connect(hp); hp.connect(g); g.connect(c.destination);
+      const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.frequency.value = 3800; bp.Q.value = 0.6;
+      const g  = c.createGain(); g.gain.value = 0.28 + Math.random() * 0.1;
+      src.connect(bp); bp.connect(g); g.connect(c.destination);
       src.start();
     } catch (_) {}
   }
 
-  // Soft blip for output lines
+  // Faint line-feed beep — like old terminal line advance
   function blip() {
     try {
       const c = ac(), osc = c.createOscillator(), g = c.createGain();
       osc.connect(g); g.connect(c.destination);
-      osc.type = 'sine'; osc.frequency.value = 680 + Math.random() * 80;
-      g.gain.setValueAtTime(0.028, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.018);
-      osc.start(); osc.stop(c.currentTime + 0.02);
+      osc.type = 'square'; osc.frequency.value = 420;
+      g.gain.setValueAtTime(0.018, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.022);
+      osc.start(); osc.stop(c.currentTime + 0.025);
     } catch (_) {}
   }
 
-  // Subtle sweep during processing phases
+  // Soft periodic scan pulse during processing
   function processPulse() {
     try {
       const c = ac(), osc = c.createOscillator(), g = c.createGain();
       osc.connect(g); g.connect(c.destination);
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(900, c.currentTime);
-      osc.frequency.linearRampToValueAtTime(1100, c.currentTime + 0.05);
-      g.gain.setValueAtTime(0.025, c.currentTime);
-      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.07);
-      osc.start(); osc.stop(c.currentTime + 0.08);
+      osc.type = 'sine'; osc.frequency.value = 1050;
+      g.gain.setValueAtTime(0.016, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.04);
+      osc.start(); osc.stop(c.currentTime + 0.045);
     } catch (_) {}
   }
 
-  // Bell-like success chime — inharmonic partials give bell character
+  // Terminal BEL (^G) — two-tone confirm, like a teletype acknowledgement
   function successChime() {
     try {
       const c = ac();
-      const base = 523.25;
-      const partials = [1, 2.76, 5.40, 8.93]; // bell partial ratios
-      const vols    = [0.14, 0.07, 0.04, 0.02];
-      const decays  = [1.1,  0.6,  0.3,  0.18];
-      partials.forEach((r, i) => {
+      [[880, 0,    0.10, 0.18],
+       [1108, 0.1, 0.08, 0.22]].forEach(([hz, delay, vol, decay]) => {
         const osc = c.createOscillator(), g = c.createGain();
         osc.connect(g); g.connect(c.destination);
-        osc.type = 'sine'; osc.frequency.value = base * r;
-        const t = c.currentTime;
+        osc.type = 'sine'; osc.frequency.value = hz;
+        const t = c.currentTime + delay;
         g.gain.setValueAtTime(0, t);
-        g.gain.linearRampToValueAtTime(vols[i], t + 0.004);
-        g.gain.exponentialRampToValueAtTime(0.0001, t + decays[i]);
-        osc.start(t); osc.stop(t + decays[i] + 0.05);
+        g.gain.linearRampToValueAtTime(vol, t + 0.008);
+        g.gain.exponentialRampToValueAtTime(0.0001, t + decay);
+        osc.start(t); osc.stop(t + decay + 0.02);
       });
     } catch (_) {}
   }
@@ -201,13 +185,11 @@
     }
   }
 
-  // Rotating word stages — not braille
-  const STAGES = ['validating', 'routing', 'settling', 'confirming', 'broadcasting'];
-  let stageIdx = 0;
+  // Braille spinner — different pattern from reference (diagonal sweep)
+  const SPIN = ['⡀','⠄','⠂','⠁','⠈','⠐','⠠','⢀'];
 
   async function run() {
     out.innerHTML = '';
-    fill.style.transition = 'none'; fill.style.width = '0%'; fill.offsetWidth;
 
     await wait(460);
     const { cmd, cur } = mkPrompt('matt');
@@ -234,18 +216,16 @@
     blip();
     await wait(340);
 
-    // Cycling stage words instead of braille
     const swapLine = addLine('');
     const swapSpan = document.createElement('span'); swapLine.appendChild(swapSpan);
-    stageIdx = 0;
-    swapSpan.innerHTML = `<span class="d">◌</span> ${STAGES[stageIdx]}`;
-
     let si = 0;
+    swapSpan.innerHTML = `<span class="d">${SPIN[si]}</span> processing`;
+
     const spinner = setInterval(() => {
-      si = (si + 1) % STAGES.length;
-      swapSpan.innerHTML = `<span class="d">◌</span> ${STAGES[si]}`;
+      si = (si + 1) % SPIN.length;
+      swapSpan.innerHTML = `<span class="d">${SPIN[si]}</span> processing`;
       processPulse();
-    }, 540);
+    }, 100);
 
     await wait(3000);
     clearInterval(spinner);
