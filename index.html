@@ -221,38 +221,72 @@
     return { line, stop: () => clearInterval(id) };
   }
 
-  async function sceneArrangeDay() {
+  function startThinking(messages, msPerMsg = 1200) {
+    const line = addLine('');
+    const span = document.createElement('span'); line.appendChild(span);
+    let si = 0, mi = 0, frames = 0;
+    const framesPerMsg = Math.round(msPerMsg / 100);
+    span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
+    const id = setInterval(() => {
+      si = (si + 1) % SPIN.length;
+      frames++;
+      if (frames % framesPerMsg === 0) mi = (mi + 1) % messages.length;
+      span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
+    }, 100);
+    return { line, stop: () => clearInterval(id) };
+  }
+
+  async function sceneDinner() {
     const { cmd, cur } = mkPrompt('matt');
     await wait(700);
-    await type(cmd, 'arrange my day');
+    await type(cmd, 'reserve dinner tonight');
     enterClick(); await wait(140); cur.remove();
 
-    addLine('<span class="d">reading calendar · health · location</span>');
-    blip(); await wait(700);
+    const t1 = startThinking([
+      'looking at your previous meals',
+      'checking what you\'ve eaten this week',
+      'thinking through your options tonight',
+    ]);
+    await wait(3800); t1.stop();
+    t1.line.remove();
 
-    addLine('<span class="mk">—</span> <span class="m">9:00am</span>   <span class="v">standup · Zoom</span>  <span class="d">22min</span>');
-    blip(); await wait(220);
-    addLine('<span class="mk">—</span> <span class="m">11:30am</span>  <span class="v">Tartine</span>  <span class="d">7hrs sleep · pushed breakfast late</span>');
-    blip(); await wait(220);
-    addLine('<span class="mk">—</span> <span class="m">2:00pm</span>   <span class="v">1 Ferry Building</span>  <span class="d">Cybercab 1:40pm</span>');
-    blip(); await wait(220);
-    addLine('<span class="mk">—</span> <span class="m">6:30pm</span>   <span class="v">Equinox · upper body</span>  <span class="d">skipped Monday</span>');
-    blip(); await wait(220);
-    addLine('<span class="mk">—</span> <span class="m">8:00pm</span>   <span class="v">House of Prime Rib</span>  <span class="d">no red meat · 0/1</span>');
+    addLine('<span class="v">House of Prime Rib</span>  <span class="d">0.8mi · Van Ness</span>');
+    blip(); await wait(250);
+    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">no red meat this week</span>  <span class="d">(0 / 1 allowed)</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">table</span>    <span class="v">window · 8:00pm · 2 seats</span>');
+    blip(); await wait(190);
+    addLine('<span class="mk">—</span> <span class="m">budget</span>   <span class="v">~$110pp</span>  <span class="d">within your range</span>');
     blip(); await wait(340);
 
-    const s1 = startSpin('scheduling');
-    await wait(3200); s1.stop();
-    s1.line.innerHTML = '<span class="g">all set</span>  5 items arranged  <span class="d">3.2s</span>';
+    const s1 = startSpin('reserving');
+    await wait(2200); s1.stop();
+    s1.line.innerHTML = '<span class="g">confirmed</span>  8:00pm · table for 2  <span class="d">2.1s</span>';
     successChime(); await wait(200);
-    addLine('view schedule  <span class="d">#D-0528</span>');
+    addLine('view reservation  <span class="d">#R-4829 · Prime Rib</span>');
+    blip(); await wait(500);
+
+    const t2 = startThinking([
+      'checking Cybercab availability',
+      'finding the best pickup time',
+    ]);
+    await wait(2200); t2.stop();
+    t2.line.remove();
+
+    const s2 = startSpin('scheduling ride');
+    await wait(1000); s2.stop();
+    s2.line.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.4s</span>';
+    successChime(); await wait(200);
+    addLine('<span class="v">Cybercab</span>  <span class="d">departs 7:40pm · arrives 8:02pm</span>');
+    blip(); await wait(190);
+    addLine('view ride  <span class="d">#C-2291 · Tesla</span>');
     blip();
   }
 
   async function run() {
     out.innerHTML = '';
     await wait(460);
-    await sceneArrangeDay();
+    await sceneDinner();
     await wait(500);
     mkPrompt('matt');
     await wait(2800);
