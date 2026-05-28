@@ -36,7 +36,7 @@
   #body {
     flex: 1;
     padding: 36px 32px 24px;
-    display: flex; flex-direction: column; justify-content: center; align-items: center;
+    display: flex; flex-direction: column; justify-content: center;
     overflow: hidden;
   }
 
@@ -45,21 +45,22 @@
     line-height: 2.0;
     color: #c0c0c0;
     width: fit-content;
+    margin: 0 auto;
   }
 
   .line { display: block; }
 
   .p  { color: #484848; }
-  .v  { color: #f5c842; }
+  .v  { color: #f97316; }
   .m  { color: #686868; }
   .d  { color: #484848; }
   .g  { color: #4ade80; }
-  .mk { color: #f5c842; }
+  .mk { color: #f97316; }
 
   .cursor {
     display: inline-block;
     width: 5px; height: 12px;
-    background: #f5c842;
+    background: #f97316;
     vertical-align: text-bottom;
     margin-left: 2px;
     animation: blink 1.0s step-end infinite;
@@ -171,8 +172,8 @@
     }
   }
 
-  // Braille spinner — different pattern from reference (diagonal sweep)
-  const SPIN = ['⡀','⠄','⠂','⠁','⠈','⠐','⠠','⢀'];
+  // Braille spinner — inverse pattern: rotating dark gap through a full block
+  const SPIN = ['⣾','⣽','⣻','⢿','⡿','⣟','⣯','⣷'];
 
   async function run() {
     out.innerHTML = '';
