@@ -25,7 +25,7 @@
 
   #terminal {
     width: var(--sz); height: var(--sz);
-    background: #0c0514;
+    background: #080808;
     border-radius: 10px;
     border: 1px solid rgba(255,255,255,0.06);
     display: flex; flex-direction: column;
@@ -115,6 +115,18 @@
     } catch (_) {}
   }
 
+  // Enter key: heavier thunk
+  function enterClick() {
+    try {
+      const c = ac(), osc = c.createOscillator(), g = c.createGain();
+      osc.type = 'square'; osc.frequency.value = 280;
+      osc.connect(g); g.connect(c.destination);
+      g.gain.setValueAtTime(0.10, c.currentTime);
+      g.gain.exponentialRampToValueAtTime(0.0001, c.currentTime + 0.048);
+      osc.start(); osc.stop(c.currentTime + 0.052);
+    } catch (_) {}
+  }
+
   // Line reveal: quiet tick
   function blip() {
     try {
@@ -184,7 +196,7 @@
     await wait(700);
 
     await type(cmd, 'reserve dinner tonight');
-    keyClick(0.28);
+    enterClick();
     await wait(140);
     cur.remove();
 
