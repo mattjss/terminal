@@ -313,23 +313,30 @@
   async function sceneFun(gen) {
     const { cmd, cur } = mkPrompt('matt');
     await wait(700);
-    await type(cmd, 'redeem golf round');
+    await type(cmd, 'play golf');
     enterClick(); await wait(140); cur.remove();
+
+    const t1 = startThinking([
+      'checking your week',
+      'tallying your stats',
+    ]);
+    await wait(2600); t1.stop(); t1.line.remove();
     if (gen !== runGen) throw 0;
 
-    addLine('<span class="v">Pebble Beach</span>  <span class="d">Sat 8:30am · 18 holes</span>');
-    blip(); await wait(250);
-    addLine('<span class="mk">—</span> <span class="m">runs</span>     <span class="v">52mi logged this month</span>  <span class="d">goal: 40mi ✓</span>');
-    blip(); await wait(190);
-    addLine('<span class="mk">—</span> <span class="m">code</span>     <span class="v">4,820 lines this week</span>');
-    blip(); await wait(190);
-    addLine('<span class="mk">—</span> <span class="m">cost</span>     <span class="v">$0</span>  <span class="d">fully earned</span>');
-    blip(); await wait(340);
+    addLine('<span class="v">52mi</span> <span class="d">run ·</span> <span class="v">5 sessions</span> <span class="d">·</span> <span class="v">ate clean</span>');
+    blip(); await wait(260);
+    addLine('<span class="mk">top tier unlocked</span>  <span class="d">2 courses available</span>');
+    blip(); await wait(400);
 
-    const s1 = startSpin('booking tee time');
+    addLine('<span class="m">The Olympic Club</span>    <span class="d">7mi</span>');
+    blip(); await wait(200);
+    addLine('<span class="v">Pebble Beach</span>        <span class="d">32mi</span>  <span class="mk">← best match</span>');
+    blip(); await wait(440);
+
+    const s1 = startSpin('booking');
     await wait(2400); s1.stop();
     if (gen !== runGen) throw 0;
-    s1.line.innerHTML = '<span class="g">confirmed</span>  Sat 8:30am · tee time held  <span class="d">1.8s</span>';
+    s1.line.innerHTML = '<span class="g">confirmed</span>  Pebble Beach · Sat 8:30am  <span class="d">1.8s</span>';
     successChime(); await wait(200);
     addLine('view booking  <span class="d">#G-2291 · Pebble Beach</span>');
     blip(); await wait(500);
