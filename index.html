@@ -79,8 +79,6 @@
     50%, 100% { opacity: 0; }
   }
 
-  #progress-track { height: 1.5px; flex-shrink: 0; background: rgba(255,255,255,0.04); }
-  #progress-fill  { height: 100%; width: 0%; background: #4ab8c4; }
 
   #meta {
     font-family: 'JetBrains Mono', monospace;
@@ -97,9 +95,7 @@
     <div id="body">
       <div id="output"></div>
     </div>
-    <div id="progress-track">
-      <div id="progress-fill"></div>
-    </div>
+
   </div>
   <div id="meta">terminal — click to enable audio</div>
 </div>
@@ -107,7 +103,6 @@
 <script>
 (() => {
   const out  = document.getElementById('output');
-  const fill = document.getElementById('progress-fill');
   const meta = document.getElementById('meta');
   let   actx = null;
 
@@ -252,18 +247,11 @@
       processPulse();
     }, 540);
 
-    const DUR = 3000;
-    await wait(16);
-    fill.style.transition = `width ${DUR}ms linear`;
-    fill.style.width = '100%';
-
-    await wait(DUR);
+    await wait(3000);
     clearInterval(spinner);
 
     swapLine.innerHTML = '<span class="g">done</span>  received .0238 BTC  <span class="d">420ms</span>';
     successChime();
-
-    fill.style.transition = 'width 280ms ease-out'; fill.style.width = '0%';
 
     await wait(200);
     addLine('view on explorer  <span class="d">tx b6f6…dacc</span>');
