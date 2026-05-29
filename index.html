@@ -20,14 +20,13 @@
   }
 
   #wrap {
-    display: flex; flex-direction: column; align-items: center; gap: 20px;
+    display: flex; flex-direction: column; align-items: center;
   }
 
   #terminal {
     width: var(--sz); height: var(--sz);
     background: #101010;
     border-radius: 10px;
-    border: 1px solid rgba(255,255,255,0.06);
     display: flex; flex-direction: column;
     overflow: hidden;
     position: relative;
@@ -71,13 +70,6 @@
     50%, 100% { opacity: 0; }
   }
 
-  #meta {
-    font-size: 10px;
-    letter-spacing: 0.04em;
-    color: rgba(255,255,255,0.18);
-    font-family: 'Geist Mono', 'Menlo', monospace;
-  }
-
   #toggle-bar {
     padding: 0 32px 18px;
     display: flex; align-items: center; justify-content: center;
@@ -113,7 +105,6 @@
       <label class="toggle"><input type="checkbox" id="mode-switch"><span class="knob"></span></label>
     </div>
   </div>
-  <div id="meta">terminal</div>
 </div>
 
 <script>
