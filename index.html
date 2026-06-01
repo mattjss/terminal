@@ -104,7 +104,7 @@
   .paddle {
     background: none; border: none; cursor: pointer;
     color: rgba(255,255,255,0.18);
-    font-size: 8px;
+    font-size: 11px;
     font-family: 'Menlo', 'Monaco', monospace;
     padding: 4px 7px;
     border-radius: 3px;
@@ -144,17 +144,6 @@
   body.light .toggle input:checked + .knob { background: rgba(0,0,0,0.16); }
   body.light .toggle input:checked + .knob::before { background: rgba(0,0,0,0.68); }
 
-  #scene-label {
-    font-size: 9px;
-    letter-spacing: 0.10em;
-    color: rgba(255,255,255,0.13);
-    font-family: 'Geist Mono', 'Menlo', monospace;
-    text-transform: lowercase;
-    transition: color 0.35s, opacity 0.2s;
-  }
-
-  body.light #scene-label { color: rgba(0,0,0,0.17); }
-
   #meta {
     font-size: 10px;
     letter-spacing: 0.04em;
@@ -175,19 +164,17 @@
     </div>
     <div id="bottom">
       <div id="controls-row">
-        <button class="paddle" id="btn-prev">◄</button>
+        <button class="paddle" id="btn-prev">&lt;</button>
         <label class="toggle"><input type="checkbox" id="mode-switch"><span class="knob"></span></label>
-        <button class="paddle" id="btn-next">►</button>
+        <button class="paddle" id="btn-next">&gt;</button>
       </div>
-      <div id="scene-label">dinner reservation</div>
     </div>
   </div>
 </div>
 
 <script>
 (() => {
-  const out        = document.getElementById('output');
-  const sceneLabel = document.getElementById('scene-label');
+  const out  = document.getElementById('output');
   let   actx = null;
 
   const ac = () => {
@@ -530,7 +517,6 @@
 
   function switchScene(idx) {
     sceneIdx = ((idx % SCENE_FNS.length) + SCENE_FNS.length) % SCENE_FNS.length;
-    sceneLabel.textContent = SCENE_NAMES[sceneIdx];
     runGen++;
     out.innerHTML = '';
     setTimeout(() => run(), 400);
