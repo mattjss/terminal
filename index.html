@@ -17,7 +17,10 @@
     display: flex; align-items: center; justify-content: center;
     overflow: hidden;
     font-family: 'Menlo', 'Monaco', 'Courier New', monospace;
+    transition: background 0.35s;
   }
+
+  body.light { background: #ece7dc; }
 
   #wrap {
     display: flex; flex-direction: column; align-items: center;
@@ -30,11 +33,17 @@
     display: flex; flex-direction: column;
     overflow: hidden;
     position: relative;
+    transition: background 0.35s, border-color 0.35s;
+  }
+
+  body.light #terminal {
+    background: #f0ebe0;
+    border-color: rgba(0,0,0,0.07);
   }
 
   #body {
     flex: 1;
-    padding: 36px 32px 24px;
+    padding: 36px 32px 20px;
     display: flex; flex-direction: column; justify-content: center;
     overflow: hidden;
   }
@@ -45,7 +54,10 @@
     color: #abb2bf;
     width: 300px;
     margin: 0 auto;
+    transition: color 0.35s;
   }
+
+  body.light #output { color: #605850; }
 
   .line { display: block; }
 
@@ -56,6 +68,13 @@
   .g  { color: #56b6c2; }
   .mk { color: #f97316; }
 
+  body.light .p  { color: #b0a090; }
+  body.light .v  { color: #1a6bb0; }
+  body.light .m  { color: #9090a0; }
+  body.light .d  { color: #b8b0a0; }
+  body.light .g  { color: #2e9e7a; }
+  body.light .mk { color: #c24d08; }
+
   .cursor {
     display: inline-block;
     width: 5px; height: 12px;
@@ -65,15 +84,42 @@
     animation: blink 1.0s step-end infinite;
   }
 
+  body.light .cursor { background: #c24d08; }
+
   @keyframes blink {
     0%, 49%  { opacity: 1; }
     50%, 100% { opacity: 0; }
   }
 
-  #toggle-bar {
-    padding: 0 32px 18px;
-    display: flex; align-items: center; justify-content: center;
+  /* Bottom controls */
+  #bottom {
+    display: flex; flex-direction: column; align-items: center;
+    padding-bottom: 18px; gap: 7px;
   }
+
+  #controls-row {
+    display: flex; align-items: center; gap: 18px;
+  }
+
+  .paddle {
+    background: none; border: none; cursor: pointer;
+    color: rgba(255,255,255,0.18);
+    font-size: 8px;
+    font-family: 'Menlo', 'Monaco', monospace;
+    padding: 4px 7px;
+    border-radius: 3px;
+    transition: color 0.15s;
+    line-height: 1;
+    user-select: none;
+  }
+
+  .paddle:hover  { color: rgba(255,255,255,0.42); }
+  .paddle:active { color: rgba(255,255,255,0.72); }
+
+  body.light .paddle         { color: rgba(0,0,0,0.20); }
+  body.light .paddle:hover   { color: rgba(0,0,0,0.48); }
+  body.light .paddle:active  { color: rgba(0,0,0,0.72); }
+
   .toggle {
     position: relative; display: inline-block;
     width: 26px; height: 14px; cursor: pointer;
@@ -92,6 +138,32 @@
   }
   .toggle input:checked + .knob { background: rgba(255,255,255,0.18); }
   .toggle input:checked + .knob::before { transform: translateX(12px); background: rgba(255,255,255,0.7); }
+
+  body.light .knob { background: rgba(0,0,0,0.10); }
+  body.light .knob::before { background: rgba(0,0,0,0.26); }
+  body.light .toggle input:checked + .knob { background: rgba(0,0,0,0.16); }
+  body.light .toggle input:checked + .knob::before { background: rgba(0,0,0,0.68); }
+
+  #scene-label {
+    font-size: 9px;
+    letter-spacing: 0.10em;
+    color: rgba(255,255,255,0.13);
+    font-family: 'Geist Mono', 'Menlo', monospace;
+    text-transform: lowercase;
+    transition: color 0.35s, opacity 0.2s;
+  }
+
+  body.light #scene-label { color: rgba(0,0,0,0.17); }
+
+  #meta {
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.18);
+    font-family: 'Geist Mono', 'Menlo', monospace;
+    transition: color 0.35s;
+  }
+
+  body.light #meta { color: rgba(0,0,0,0.22); }
 </style>
 </head>
 <body>
@@ -101,16 +173,21 @@
     <div id="body">
       <div id="output"></div>
     </div>
-    <div id="toggle-bar">
-      <label class="toggle"><input type="checkbox" id="mode-switch"><span class="knob"></span></label>
+    <div id="bottom">
+      <div id="controls-row">
+        <button class="paddle" id="btn-prev">◄</button>
+        <label class="toggle"><input type="checkbox" id="mode-switch"><span class="knob"></span></label>
+        <button class="paddle" id="btn-next">►</button>
+      </div>
+      <div id="scene-label">dinner reservation</div>
     </div>
   </div>
 </div>
 
 <script>
 (() => {
-  const out  = document.getElementById('output');
-  const meta = document.getElementById('meta');
+  const out        = document.getElementById('output');
+  const sceneLabel = document.getElementById('scene-label');
   let   actx = null;
 
   const ac = () => {
@@ -126,7 +203,6 @@
     const src = c.createBufferSource(); src.buffer = buf; return src;
   }
 
-  // Keystroke: sharp pop + pitch-dropping sine (percussive thock)
   function keyClick() {
     try {
       const c = ac(), t = c.currentTime;
@@ -145,7 +221,6 @@
     } catch (_) {}
   }
 
-  // Enter key: heavier pop + deeper pitch sweep
   function enterClick() {
     try {
       const c = ac(), t = c.currentTime;
@@ -164,7 +239,6 @@
     } catch (_) {}
   }
 
-  // Line reveal: faint tick
   function blip() {
     try {
       const c = ac(), t = c.currentTime;
@@ -176,10 +250,6 @@
     } catch (_) {}
   }
 
-  // Processing: silent
-  function processPulse() {}
-
-  // Success: two clean tones
   function successChime() {
     try {
       const c = ac();
@@ -197,7 +267,6 @@
 
   const wait = ms => new Promise(r => setTimeout(r, ms));
 
-  // Cancellable wait — rejects within ms if gen changed
   function waitG(ms, gen) {
     return new Promise((res, rej) => setTimeout(() => runGen === gen ? res() : rej(0), ms));
   }
@@ -230,17 +299,16 @@
 
   const SPIN = ['⣾','⣽','⣻','⢿','⡿','⣟','⣯','⣷'];
 
-  // Cancellable thinking — interval checks gen every 100ms, rejects fast
   function thinkFor(messages, ms, gen) {
     const line = addLine('');
     const span = document.createElement('span'); line.appendChild(span);
-    let si = 0, mi = 0, frames = 0, fpm = 12;
+    let si = 0, mi = 0, frames = 0;
     span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
     return new Promise((res, rej) => {
       const iv = setInterval(() => {
         if (runGen !== gen) { clearInterval(iv); line.remove(); rej(0); return; }
         si = (si + 1) % SPIN.length;
-        if (++frames % fpm === 0) mi = (mi + 1) % messages.length;
+        if (++frames % 12 === 0) mi = (mi + 1) % messages.length;
         span.innerHTML = `<span class="v">${SPIN[si]}</span>  <span class="d">${messages[mi]}</span>`;
       }, 100);
       setTimeout(() => {
@@ -251,7 +319,6 @@
     });
   }
 
-  // Cancellable spinner — resolves with line element, rejects fast on cancel
   function spinFor(label, ms, gen) {
     const line = addLine('');
     const span = document.createElement('span'); line.appendChild(span);
@@ -270,8 +337,7 @@
     });
   }
 
-  let mode = 'reserve';
-  let runGen = 0;
+  // ── Scenes ────────────────────────────────────────────────────────
 
   async function sceneDinner(gen) {
     const { cmd, cur } = mkPrompt('matt');
@@ -287,11 +353,11 @@
 
     addLine('<span class="v">House of Prime Rib</span>  <span class="d">0.8mi · Van Ness</span>');
     blip(); await waitG(250, gen);
-    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">no red meat this week</span>  <span class="d">(0 / 1 allowed)</span>');
+    addLine('<span class="mk">—</span> <span class="m">why</span>      <span class="v">no red meat this week</span>  <span class="d">(0 / 1)</span>');
     blip(); await waitG(190, gen);
     addLine('<span class="mk">—</span> <span class="m">table</span>    <span class="v">window · 8:00pm · 2 seats</span>');
     blip(); await waitG(190, gen);
-    addLine('<span class="mk">—</span> <span class="m">budget</span>   <span class="v">~$110pp</span>  <span class="d">within your range</span>');
+    addLine('<span class="mk">—</span> <span class="m">budget</span>   <span class="v">~$110pp</span>  <span class="d">within range</span>');
     blip(); await waitG(340, gen);
 
     const l1 = await spinFor('reserving', 2200, gen);
@@ -300,10 +366,7 @@
     addLine('view reservation  <span class="d">#R-4829 · Prime Rib</span>');
     blip(); await waitG(500, gen);
 
-    await thinkFor([
-      'traffic\'s clear on Van Ness',
-      'timing it around your 8pm',
-    ], 2200, gen);
+    await thinkFor(['timing ride around your 8pm'], 2200, gen);
 
     const l2 = await spinFor('scheduling ride', 1000, gen);
     l2.innerHTML = '<span class="g">ride confirmed</span>  <span class="d">1.4s</span>';
@@ -320,10 +383,7 @@
     await type(cmd, 'play golf', gen);
     enterClick(); await waitG(140, gen); cur.remove();
 
-    await thinkFor([
-      'checking your week',
-      'tallying your stats',
-    ], 2600, gen);
+    await thinkFor(['checking your week', 'tallying your stats'], 2600, gen);
 
     addLine('<span class="mk">—</span> <span class="m">run</span>     <span class="v">52mi</span>  <span class="d">goal 40mi</span>  <span class="g">✓</span>');
     blip(); await waitG(220, gen);
@@ -355,25 +415,145 @@
     blip();
   }
 
+  async function sceneMorning(gen) {
+    const { cmd, cur } = mkPrompt('matt');
+    await waitG(700, gen);
+    await type(cmd, 'morning brief', gen);
+    enterClick(); await waitG(140, gen); cur.remove();
+
+    await thinkFor([
+      'syncing health data',
+      'pulling your schedule',
+      'checking weather',
+    ], 3200, gen);
+
+    addLine('<span class="mk">—</span> <span class="m">sleep</span>    <span class="v">6h 42m</span>  <span class="d">deep 1h 12m</span>  <span class="g">✓</span>');
+    blip(); await waitG(220, gen);
+    addLine('<span class="mk">—</span> <span class="m">hrv</span>      <span class="v">68ms</span>  <span class="d">+4 from yesterday</span>  <span class="g">✓</span>');
+    blip(); await waitG(220, gen);
+    addLine('<span class="mk">—</span> <span class="m">weather</span>  <span class="v">62°F · clear</span>  <span class="d">SF · no rain</span>');
+    blip(); await waitG(300, gen);
+
+    addLine('');
+    addLine('<span class="d">today</span>');
+    blip(); await waitG(180, gen);
+    addLine('<span class="mk">—</span> <span class="m">9:00am</span>   <span class="v">standup</span>  <span class="d">eng team · 15min</span>');
+    blip(); await waitG(200, gen);
+    addLine('<span class="mk">—</span> <span class="m">1:00pm</span>   <span class="v">figma review</span>  <span class="d">← prep deck</span>');
+    blip(); await waitG(340, gen);
+
+    addLine('');
+    await thinkFor(['meal timing', 'gym window'], 1600, gen);
+
+    addLine('<span class="mk">—</span> <span class="m">gym</span>      <span class="v">7:30 – 9:00am</span>  <span class="d">window open</span>');
+    blip(); await waitG(200, gen);
+    addLine('<span class="mk">—</span> <span class="m">meals</span>    <span class="v">3 clean meals prepped</span>  <span class="g">✓</span>');
+    blip();
+  }
+
+  async function sceneTrip(gen) {
+    const { cmd, cur } = mkPrompt('matt');
+    await waitG(700, gen);
+    await type(cmd, 'find a trip', gen);
+    enterClick(); await waitG(140, gen); cur.remove();
+
+    await thinkFor([
+      'Jun 14–18 window clear',
+      'scanning flights + hotels',
+      'checking budget',
+    ], 3600, gen);
+
+    addLine('<span class="v">Tulum, MX</span>  <span class="d">Jun 14–18 · 5 nights · 2 tickets</span>');
+    blip(); await waitG(240, gen);
+    addLine('<span class="mk">—</span> <span class="m">flight</span>   <span class="v">$640/pp · nonstop</span>  <span class="d">AA · SFO → CUN</span>');
+    blip(); await waitG(200, gen);
+    addLine('<span class="mk">—</span> <span class="m">hotel</span>    <span class="v">Casa Malca</span>  <span class="d">boutique · beachfront · $320/night</span>');
+    blip(); await waitG(200, gen);
+    addLine('<span class="mk">—</span> <span class="m">total</span>    <span class="v">$2,880</span>  <span class="d">flights + 5 nights</span>');
+    blip(); await waitG(380, gen);
+
+    const l1 = await spinFor('booking flights', 2600, gen);
+    l1.innerHTML = '<span class="g">confirmed</span>  Jun 14 · AA 847 · SFO → CUN  <span class="d">3.2s</span>';
+    successChime(); await waitG(200, gen);
+    addLine('view booking  <span class="d">#F-2291 · American Airlines</span>');
+    blip(); await waitG(420, gen);
+
+    const l2 = await spinFor('reserving hotel', 2000, gen);
+    l2.innerHTML = '<span class="g">confirmed</span>  Casa Malca · Jun 14–18  <span class="d">2.8s</span>';
+    successChime(); await waitG(200, gen);
+    addLine('view booking  <span class="d">#H-4429 · Tulum</span>');
+    blip();
+  }
+
+  async function sceneWorkout(gen) {
+    const { cmd, cur } = mkPrompt('matt');
+    await waitG(700, gen);
+    await type(cmd, 'build my workout', gen);
+    enterClick(); await waitG(140, gen); cur.remove();
+
+    await thinkFor([
+      'checking recovery score',
+      'reviewing last 7 days',
+      'last push day: 3 days ago',
+    ], 3000, gen);
+
+    addLine('<span class="mk">—</span> <span class="m">recovery</span>  <span class="v">82</span>  <span class="d">+6 from yesterday</span>  <span class="g">ready to push</span>');
+    blip(); await waitG(260, gen);
+    addLine('<span class="mk">—</span> <span class="m">split</span>     <span class="v">push day</span>  <span class="d">chest / shoulders / tris</span>');
+    blip(); await waitG(340, gen);
+
+    addLine('');
+    addLine('<span class="d">program</span>');
+    blip(); await waitG(180, gen);
+    addLine('<span class="mk">—</span> <span class="m">bench press</span>   <span class="v">4×8</span>  <span class="d">185lb</span>  <span class="g">↑ 10lb</span>');
+    blip(); await waitG(200, gen);
+    addLine('<span class="mk">—</span> <span class="m">incline db</span>     <span class="v">3×10</span>  <span class="d">65lb</span>');
+    blip(); await waitG(200, gen);
+    addLine('<span class="mk">—</span> <span class="m">cable fly</span>      <span class="v">3×15</span>  <span class="d">25lb</span>');
+    blip(); await waitG(200, gen);
+    addLine('<span class="mk">—</span> <span class="m">ohp</span>            <span class="v">3×8</span>   <span class="d">115lb</span>');
+    blip(); await waitG(380, gen);
+
+    const l1 = await spinFor('scheduling', 1200, gen);
+    l1.innerHTML = '<span class="g">added to calendar</span>  gym · 6:00am · 90min  <span class="d">1.1s</span>';
+    successChime();
+    blip();
+  }
+
+  // ── Scene registry ────────────────────────────────────────────────
+
+  const SCENE_NAMES = ['dinner reservation', 'golf round', 'morning brief', 'find a trip', 'build workout'];
+  const SCENE_FNS   = [sceneDinner, sceneFun, sceneMorning, sceneTrip, sceneWorkout];
+
+  let sceneIdx = 0;
+  let runGen   = 0;
+
+  function switchScene(idx) {
+    sceneIdx = ((idx % SCENE_FNS.length) + SCENE_FNS.length) % SCENE_FNS.length;
+    sceneLabel.textContent = SCENE_NAMES[sceneIdx];
+    runGen++;
+    out.innerHTML = '';
+    setTimeout(() => run(), 400);
+  }
+
   async function run() {
     const gen = ++runGen;
     out.innerHTML = '';
     try {
       await waitG(700, gen);
-      if (mode === 'fun') await sceneFun(gen);
-      else await sceneDinner(gen);
+      await SCENE_FNS[sceneIdx](gen);
       await waitG(500, gen);
       mkPrompt('matt');
       await waitG(2800, gen);
       run();
-    } catch(_) {}
+    } catch (_) {}
   }
 
+  document.getElementById('btn-prev').addEventListener('click', () => switchScene(sceneIdx - 1));
+  document.getElementById('btn-next').addEventListener('click', () => switchScene(sceneIdx + 1));
+
   document.getElementById('mode-switch').addEventListener('change', e => {
-    mode = e.target.checked ? 'fun' : 'reserve';
-    runGen++;
-    out.innerHTML = '';
-    setTimeout(() => run(), 500);
+    document.body.classList.toggle('light', e.target.checked);
   });
 
   document.addEventListener('click', () => ac(), { once: true });
