@@ -68,11 +68,11 @@
   .g  { color: #56b6c2; }
   .mk { color: #f97316; }
 
-  body.light .p  { color: #b0a090; }
-  body.light .v  { color: #1a6bb0; }
-  body.light .m  { color: #9090a0; }
-  body.light .d  { color: #b8b0a0; }
-  body.light .g  { color: #2e9e7a; }
+  body.light .p  { color: #a09080; }
+  body.light .v  { color: #1a5a9e; }
+  body.light .m  { color: #706878; }
+  body.light .d  { color: #a09080; }
+  body.light .g  { color: #1e7a58; }
   body.light .mk { color: #c24d08; }
 
   .cursor {
@@ -538,7 +538,16 @@
   document.getElementById('btn-prev').addEventListener('click', () => switchScene(sceneIdx - 1));
   document.getElementById('btn-next').addEventListener('click', () => switchScene(sceneIdx + 1));
 
-  document.getElementById('mode-switch').addEventListener('change', e => {
+  const modeSwitch = document.getElementById('mode-switch');
+
+  // Initialize from system preference
+  const prefersLight = window.matchMedia('(prefers-color-scheme: light)').matches;
+  if (prefersLight) {
+    document.body.classList.add('light');
+    modeSwitch.checked = true;
+  }
+
+  modeSwitch.addEventListener('change', e => {
     document.body.classList.toggle('light', e.target.checked);
   });
 
