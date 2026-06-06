@@ -559,6 +559,24 @@
 
   document.addEventListener('click', () => ac(), { once: true });
 
+  // Portfolio postMessage: theme + mute control
+  let audioMuted = true;
+  window.addEventListener('message', e => {
+    if (e.data?.type === 'theme') {
+      const isLight = e.data.theme === 'light';
+      document.body.classList.toggle('light', isLight);
+      if (modeSwitch) modeSwitch.checked = isLight;
+    }
+    if (e.data?.type === 'setMuted') audioMuted = !!e.data.muted;
+  });
+
+  // Patch sound functions to respect muted state
+  const _keyClick = keyClick, _enterClick = enterClick, _blip = blip, _successChime = successChime;
+  keyClick = () => { if (!audioMuted) _keyClick(); };
+  enterClick = () => { if (!audioMuted) _enterClick(); };
+  blip = () => { if (!audioMuted) _blip(); };
+  successChime = () => { if (!audioMuted) _successChime(); };
+
   run();
 })();
 </script>
