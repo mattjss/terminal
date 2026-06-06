@@ -186,6 +186,7 @@
 
   const ac = () => {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
+    if (actx.state === 'suspended') actx.resume();
     return actx;
   };
 
@@ -562,8 +563,6 @@
     document.body.classList.toggle('light', e.target.checked);
   });
 
-  document.addEventListener('click', () => ac(), { once: true });
-
   // Portfolio postMessage: theme + mute control
   window.addEventListener('message', e => {
     if (e.data?.type === 'theme') {
@@ -571,7 +570,10 @@
       document.body.classList.toggle('light', isLight);
       if (modeSwitch) modeSwitch.checked = isLight;
     }
-    if (e.data?.type === 'setMuted') audioMuted = !!e.data.muted;
+    if (e.data?.type === 'setMuted') {
+      audioMuted = !!e.data.muted;
+      if (!audioMuted) ac(); // resume AudioContext on unmute so sound can play
+    }
   });
 
   run();
