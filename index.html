@@ -182,7 +182,7 @@
 (() => {
   const out  = document.getElementById('output');
   let   actx = null;
-  let   audioMuted = true;
+  let   audioMuted = false;
 
   const ac = () => {
     if (!actx) actx = new (window.AudioContext || window.webkitAudioContext)();
@@ -542,7 +542,7 @@
       await SCENE_FNS[sceneIdx](gen);
       await waitG(500, gen);
       mkPrompt('matt');
-      await waitG(2800, gen);
+      await waitG(5000, gen);
       run();
     } catch (_) {}
   }
